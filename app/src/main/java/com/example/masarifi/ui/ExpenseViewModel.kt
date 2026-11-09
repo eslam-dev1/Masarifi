@@ -17,59 +17,57 @@ data class ExpenseUiState(
     val expenses: List<Expense> = emptyList(),
     val totalToday: Double = 0.0,
     val totalThisMonth: Double = 0.0,
-    val categoryTotals: Map<String, Double> = emptyMap()
+    val categoryTotals: Map<String, Double> = emptyMap(),
+    val monthlyBudget: Double = 0.0,
+    val isLoading: Boolean = true
 )
 
 class ExpenseViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = ExpenseRepository(
-        MasarifiDatabase.getInstance(application).expenseDao()
-    )
-
+    private val repository = ExpenseRepository(MasarifiDatabase.getInstance(application).expenseDao())
     private val _uiState = MutableStateFlow(ExpenseUiState())
     val uiState: StateFlow<ExpenseUiState> = _uiState.asStateFlow()
 
-    init {
-        refresh()
-    }
+    init { refresh() }
 
-    fun addExpense(title: String, amount: String, category: String, date: String, note: String) {
+    fun saveExpense(title: String, amount: String, category: String, date: String, note: String, id: Long? = null) {
         val parsedAmount = amount.toDoubleOrNull()?.takeIf { it > 0 } ?: return
-        val expense = Expense(
-            id = System.currentTimeMillis(),
-            title = title.trim(),
-            amount = parsedAmount,
-            category = category,
-            date = date.ifBlank { LocalDate.now().toString() },
-            note = note.trim()
-        )
-
+        val validDate = runCatching { LocalDate.parse(date); true }.getOrDefault(false)
+        if (title.isBlank() || !validDate) return
         viewModelScope.launch {
-            repository.addExpense(expense)
+            repository.saveExpense(Expense(id ?: System.currentTimeMillis(), title.trim(), parsedAmount, category, date, note.trim()))
             refresh()
         }
     }
 
     fun deleteExpense(id: Long) {
+        viewModelScope.launch { repository.deleteExpense(id); refresh() }
+    }
+
+    fun saveMonthlyBudget(amount: String) {
+        val parsedAmount = amount.toDoubleOrNull()?.takeIf { it >= 0 } ?: return
         viewModelScope.launch {
-            repository.deleteExpense(id)
+            repository.saveBudget(currentMonth(), parsedAmount)
             refresh()
         }
     }
 
+    private fun currentMonth() = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"))
+
     private fun refresh() {
         viewModelScope.launch {
             val expenses = repository.getAll()
-            val today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
-            val currentMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"))
-            val thisMonth = expenses.filter { it.monthKey == currentMonth }
-
+            val today = LocalDate.now().toString()
+            val month = currentMonth()
+            val thisMonth = expenses.filter { it.monthKey == month }
             _uiState.value = ExpenseUiState(
                 expenses = expenses,
                 totalToday = expenses.filter { it.date == today }.sumOf { it.amount },
                 totalThisMonth = thisMonth.sumOf { it.amount },
                 categoryTotals = thisMonth.groupBy { it.category }
-                    .mapValues { (_, items) -> items.sumOf { it.amount } }
-                    .toSortedMap()
+                    .mapValues { (_, entries) -> entries.sumOf { it.amount } }
+                    .toSortedMap(),
+                monthlyBudget = repository.getBudget(month),
+                isLoading = false
             )
         }
     }

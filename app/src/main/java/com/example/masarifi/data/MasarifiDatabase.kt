@@ -1,5 +1,6 @@
 package com.example.masarifi.data
 
+import android.content.Context
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
@@ -9,7 +10,8 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import android.content.Context
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Entity(tableName = "expenses")
 data class ExpenseEntity(
@@ -22,6 +24,12 @@ data class ExpenseEntity(
     val note: String
 )
 
+@Entity(tableName = "monthly_budgets")
+data class MonthlyBudgetEntity(
+    @PrimaryKey val month: String,
+    val amount: Double
+)
+
 @Dao
 interface ExpenseDao {
     @Query("SELECT * FROM expenses ORDER BY date DESC, id DESC")
@@ -32,9 +40,15 @@ interface ExpenseDao {
 
     @Query("DELETE FROM expenses WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    @Query("SELECT * FROM monthly_budgets WHERE month = :month LIMIT 1")
+    suspend fun getBudget(month: String): MonthlyBudgetEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveBudget(budget: MonthlyBudgetEntity)
 }
 
-@Database(entities = [ExpenseEntity::class], version = 1, exportSchema = false)
+@Database(entities = [ExpenseEntity::class, MonthlyBudgetEntity::class], version = 2, exportSchema = false)
 abstract class MasarifiDatabase : RoomDatabase() {
     abstract fun expenseDao(): ExpenseDao
 
@@ -42,13 +56,19 @@ abstract class MasarifiDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: MasarifiDatabase? = null
 
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS monthly_budgets (month TEXT NOT NULL, amount REAL NOT NULL, PRIMARY KEY(month))")
+            }
+        }
+
         fun getInstance(context: Context): MasarifiDatabase =
             INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
                     context.applicationContext,
                     MasarifiDatabase::class.java,
                     "masarifi.db"
-                ).build().also { INSTANCE = it }
+                ).addMigrations(MIGRATION_1_2).build().also { INSTANCE = it }
             }
     }
 }

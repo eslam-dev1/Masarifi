@@ -1,6 +1,5 @@
 package com.example.masarifi.ui
 
-import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,14 +20,16 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowOutward
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.Wallet
 import androidx.compose.material3.AlertDialog
@@ -40,6 +41,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -74,190 +76,196 @@ import java.util.Locale
 
 private val Forest = Color(0xFF173B32)
 private val Mint = Color(0xFFB7E4C7)
-private val Canvas = Color(0xFFF7F8F4)
 private val Muted = Color(0xFF7C8983)
-private val SoftGreen = Color(0xFFE9F2EC)
 private const val LANGUAGE_PREFS = "masarifi_settings"
 private const val LANGUAGE_KEY = "language_english"
 
-private fun text(key: String, english: Boolean): String {
-    val en = mapOf(
-        "greeting" to "Welcome 👋", "app" to "Masarifi", "month_expenses" to "Monthly expenses",
-        "monthly_total" to "Total recorded this month", "quick_view" to "Quick overview",
-        "last_7_days" to "Spending over the last 7 days", "by_category" to "By category",
-        "this_month" to "This month", "first_category" to "Add your first expense to see category insights",
-        "recent" to "Recent transactions", "transactions" to "transactions", "empty_title" to "No expenses yet",
-        "empty_hint" to "Tap + to record your first expense", "new_expense" to "New expense",
-        "expense_name" to "Expense name", "amount" to "Amount (EGP)", "category" to "Category",
-        "date" to "Date (yyyy-MM-dd)", "optional_note" to "Optional note", "save" to "Save",
-        "cancel" to "Cancel", "add" to "Add", "delete" to "Delete expense", "currency" to "EGP",
-        "name_error" to "Enter an expense name", "amount_error" to "Enter an amount greater than zero",
-        "date_error" to "Enter a date in yyyy-MM-dd format", "food" to "Food", "transport" to "Transport",
-        "bills" to "Bills", "shopping" to "Shopping", "education" to "Education", "other" to "Other"
-    )
-    val ar = mapOf(
-        "greeting" to "أهلاً بيك 👋", "app" to "مصاريفي", "month_expenses" to "مصروفات الشهر",
-        "monthly_total" to "إجمالي ما سجلته خلال الشهر", "quick_view" to "نظرة سريعة",
-        "last_7_days" to "مصروفات آخر ٧ أيام", "by_category" to "حسب التصنيف",
-        "this_month" to "هذا الشهر", "first_category" to "سجّل مصروفك الأول لتظهر لك إحصائيات التصنيفات",
-        "recent" to "آخر العمليات", "transactions" to "عملية", "empty_title" to "لسه مفيش مصاريف",
-        "empty_hint" to "اضغط على + وسجّل أول مصروف", "new_expense" to "مصروف جديد",
-        "expense_name" to "اسم المصروف", "amount" to "المبلغ بالجنيه", "category" to "التصنيف",
-        "date" to "التاريخ (yyyy-MM-dd)", "optional_note" to "ملاحظة اختيارية", "save" to "حفظ",
-        "cancel" to "إلغاء", "add" to "إضافة", "delete" to "حذف المصروف", "currency" to "ج.م",
-        "name_error" to "اكتب اسم المصروف", "amount_error" to "اكتب مبلغًا صحيحًا أكبر من صفر",
-        "date_error" to "اكتب التاريخ بصيغة yyyy-MM-dd", "food" to "طعام", "transport" to "نقل",
-        "bills" to "فواتير", "shopping" to "تسوق", "education" to "تعليم", "other" to "أخرى"
-    )
-    return (if (english) en else ar)[key] ?: key
-}
+private fun tr(key: String, en: Boolean) = (if (en) mapOf(
+    "greeting" to "Welcome", "month" to "Monthly spending", "budget" to "Monthly budget", "set_budget" to "Set budget",
+    "spent" to "Spent", "remaining" to "Remaining", "over_budget" to "Over budget", "today" to "Today",
+    "quick" to "Last 7 days", "categories" to "Spending by category", "recent" to "Recent expenses",
+    "empty" to "No expenses yet", "empty_hint" to "Tap + to add your first expense", "count" to "transactions",
+    "new" to "New expense", "edit" to "Edit expense", "name" to "Expense name", "amount" to "Amount (EGP)",
+    "category" to "Category", "date" to "Date (yyyy-MM-dd)", "note" to "Note (optional)", "save" to "Save",
+    "cancel" to "Cancel", "food" to "Food", "transport" to "Transport", "bills" to "Bills",
+    "shopping" to "Shopping", "education" to "Education", "other" to "Other", "currency" to "EGP",
+    "budget_title" to "Monthly budget", "budget_hint" to "Enter your spending limit for this month",
+    "budget_invalid" to "Enter a valid amount", "expense_invalid" to "Enter a name, positive amount and valid date",
+    "delete" to "Delete expense", "language" to "العربية", "dark" to "Switch to light mode", "light" to "Switch to dark mode"
+) else mapOf(
+    "greeting" to "أهلاً بيك", "month" to "مصروفات الشهر", "budget" to "ميزانية الشهر", "set_budget" to "تحديد الميزانية",
+    "spent" to "المصروف", "remaining" to "المتبقي", "over_budget" to "تجاوزت الميزانية", "today" to "اليوم",
+    "quick" to "مصروفات آخر ٧ أيام", "categories" to "المصروفات حسب التصنيف", "recent" to "آخر المصروفات",
+    "empty" to "لسه مفيش مصاريف", "empty_hint" to "اضغط + لإضافة أول مصروف", "count" to "عملية",
+    "new" to "مصروف جديد", "edit" to "تعديل المصروف", "name" to "اسم المصروف", "amount" to "المبلغ بالجنيه",
+    "category" to "التصنيف", "date" to "التاريخ (yyyy-MM-dd)", "note" to "ملاحظة اختيارية", "save" to "حفظ",
+    "cancel" to "إلغاء", "food" to "طعام", "transport" to "نقل", "bills" to "فواتير",
+    "shopping" to "تسوق", "education" to "تعليم", "other" to "أخرى", "currency" to "ج.م",
+    "budget_title" to "ميزانية الشهر", "budget_hint" to "اكتب الحد الأقصى لمصروفات الشهر",
+    "budget_invalid" to "اكتب مبلغًا صحيحًا", "expense_invalid" to "تأكد من الاسم والمبلغ والتاريخ",
+    "delete" to "حذف المصروف", "language" to "English", "dark" to "التبديل للوضع الفاتح", "light" to "التبديل للوضع الداكن"
+))[key] ?: key
 
-private fun categoryLabel(category: String, english: Boolean): String = when (category) {
-    "طعام" -> text("food", english)
-    "نقل" -> text("transport", english)
-    "فواتير" -> text("bills", english)
-    "تسوق" -> text("shopping", english)
-    "تعليم" -> text("education", english)
-    else -> text("other", english)
+private fun categoryName(value: String, en: Boolean) = when (value) {
+    "طعام" -> tr("food", en); "نقل" -> tr("transport", en); "فواتير" -> tr("bills", en)
+    "تسوق" -> tr("shopping", en); "تعليم" -> tr("education", en); else -> tr("other", en)
 }
 
 @Composable
-fun MasarifiApp(viewModel: ExpenseViewModel = viewModel()) {
+fun MasarifiApp(
+    darkMode: Boolean,
+    onToggleDarkMode: () -> Unit,
+    viewModel: ExpenseViewModel = viewModel()
+) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    val preferences = remember { context.getSharedPreferences(LANGUAGE_PREFS, Context.MODE_PRIVATE) }
-    var english by remember { mutableStateOf(preferences.getBoolean(LANGUAGE_KEY, false)) }
-    var showDialog by remember { mutableStateOf(false) }
+    val prefs = remember { context.getSharedPreferences(LANGUAGE_PREFS, android.content.Context.MODE_PRIVATE) }
+    var english by remember { mutableStateOf(prefs.getBoolean(LANGUAGE_KEY, false)) }
+    var showExpenseDialog by remember { mutableStateOf(false) }
+    var showBudgetDialog by remember { mutableStateOf(false) }
+    var editing by remember { mutableStateOf<Expense?>(null) }
     val locale = if (english) Locale.ENGLISH else Locale("ar", "EG")
-    val currency = remember(english) { NumberFormat.getNumberInstance(locale).apply { maximumFractionDigits = 2 } }
+    val number = remember(english) { NumberFormat.getNumberInstance(locale).apply { maximumFractionDigits = 2 } }
 
     CompositionLocalProvider(LocalLayoutDirection provides if (english) LayoutDirection.Ltr else LayoutDirection.Rtl) {
         Scaffold(
-            containerColor = Canvas,
+            containerColor = MaterialTheme.colorScheme.background,
             floatingActionButton = {
-                FloatingActionButton(
-                    onClick = { showDialog = true },
-                    shape = RoundedCornerShape(18.dp),
-                    containerColor = Forest,
-                    contentColor = Color.White
-                ) { Icon(Icons.Default.Add, contentDescription = text("add", english)) }
+                FloatingActionButton(onClick = { editing = null; showExpenseDialog = true }, containerColor = Forest, contentColor = Color.White, shape = RoundedCornerShape(18.dp)) {
+                    Icon(Icons.Default.Add, contentDescription = tr("new", english))
+                }
             }
         ) { padding ->
-            Column(
-                modifier = Modifier.fillMaxSize().padding(padding)
-                    .verticalScroll(rememberScrollState()).padding(horizontal = 20.dp)
-            ) {
+            Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(horizontal = 20.dp)) {
                 Spacer(Modifier.height(18.dp))
-                Header(english) {
+                Header(english, darkMode, onLanguage = {
                     english = !english
-                    preferences.edit().putBoolean(LANGUAGE_KEY, english).apply()
-                }
-                Spacer(Modifier.height(22.dp))
-                MonthOverview(currency.format(state.totalThisMonth), english, locale)
+                    prefs.edit().putBoolean(LANGUAGE_KEY, english).apply()
+                }, onTheme = onToggleDarkMode)
                 Spacer(Modifier.height(20.dp))
-                WeeklySpending(state.expenses, currency, english, locale)
+                MonthCard(state.totalThisMonth, number, english, locale)
+                Spacer(Modifier.height(14.dp))
+                BudgetCard(state.monthlyBudget, state.totalThisMonth, number, english) { showBudgetDialog = true }
+                Spacer(Modifier.height(20.dp))
+                WeekCard(state.expenses, number, english, locale)
                 Spacer(Modifier.height(22.dp))
-                CategoriesSection(state.categoryTotals, currency, english)
+                CategoryCard(state.categoryTotals, number, english)
                 Spacer(Modifier.height(22.dp))
-                RecentExpenses(state.expenses, currency, english, viewModel::deleteExpense)
+                RecentCard(state.expenses, number, english, onDelete = viewModel::deleteExpense, onEdit = {
+                    editing = it
+                    showExpenseDialog = true
+                })
                 Spacer(Modifier.height(90.dp))
             }
         }
 
-        if (showDialog) {
-            AddExpenseDialog(english, onDismiss = { showDialog = false }) { title, amount, category, date, note ->
-                viewModel.addExpense(title, amount, category, date, note)
-                showDialog = false
+        if (showBudgetDialog) {
+            AmountDialog(
+                title = tr("budget_title", english), hint = tr("budget_hint", english), initialValue = if (state.monthlyBudget > 0) state.monthlyBudget.toString() else "",
+                errorText = tr("budget_invalid", english), english = english,
+                onDismiss = { showBudgetDialog = false }, onSave = { value -> viewModel.saveMonthlyBudget(value); showBudgetDialog = false }
+            )
+        }
+        if (showExpenseDialog) {
+            ExpenseDialog(english, editing, onDismiss = { showExpenseDialog = false; editing = null }) { title, amount, category, date, note, id ->
+                viewModel.saveExpense(title, amount, category, date, note, id)
+                showExpenseDialog = false
+                editing = null
             }
         }
     }
 }
 
 @Composable
-private fun Header(english: Boolean, onLanguageClick: () -> Unit) {
+private fun Header(english: Boolean, darkMode: Boolean, onLanguage: () -> Unit, onTheme: () -> Unit) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column {
-            Text(text("greeting", english), color = Muted, style = MaterialTheme.typography.bodyMedium)
-            Spacer(Modifier.height(3.dp))
-            Text(text("app", english), color = Forest, fontSize = 27.sp, fontWeight = FontWeight.ExtraBold)
+            Text("${tr("greeting", english)} 👋", color = Muted, style = MaterialTheme.typography.bodyMedium)
+            Text(if (english) "Masarifi" else "مصاريفي", color = MaterialTheme.colorScheme.onBackground, fontSize = 27.sp, fontWeight = FontWeight.ExtraBold)
         }
-        Surface(shape = RoundedCornerShape(50), color = Color.White, shadowElevation = 2.dp) {
-            TextButton(onClick = onLanguageClick) {
-                Icon(Icons.Default.Language, contentDescription = null, tint = Forest, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(6.dp))
-                Text(if (english) "العربية" else "English", color = Forest, fontWeight = FontWeight.SemiBold)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onTheme) { Icon(if (darkMode) Icons.Default.LightMode else Icons.Default.DarkMode, contentDescription = tr(if (darkMode) "light" else "dark", english), tint = MaterialTheme.colorScheme.primary) }
+            Surface(shape = RoundedCornerShape(50), color = MaterialTheme.colorScheme.surface, shadowElevation = 1.dp) {
+                TextButton(onClick = onLanguage) {
+                    Icon(Icons.Default.Language, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(17.dp))
+                    Spacer(Modifier.width(5.dp))
+                    Text(tr("language", english), color = MaterialTheme.colorScheme.primary)
+                }
             }
         }
     }
 }
 
 @Composable
-private fun MonthOverview(formattedTotal: String, english: Boolean, locale: Locale) {
-    val monthName = remember(english) { LocalDate.now().format(DateTimeFormatter.ofPattern("MMMM yyyy", locale)) }
-    Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(28.dp), colors = CardDefaults.cardColors(containerColor = Forest), elevation = CardDefaults.cardElevation(5.dp)) {
-        Column(Modifier.padding(22.dp)) {
+private fun MonthCard(total: Double, number: NumberFormat, english: Boolean, locale: Locale) {
+    val month = remember(english) { LocalDate.now().format(DateTimeFormatter.ofPattern("MMMM yyyy", locale)) }
+    Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), colors = CardDefaults.cardColors(containerColor = Forest), elevation = CardDefaults.cardElevation(4.dp)) {
+        Column(Modifier.padding(21.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.CalendarMonth, contentDescription = null, tint = Mint, modifier = Modifier.size(19.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text(text("month_expenses", english), color = Color.White.copy(alpha = .82f), style = MaterialTheme.typography.titleSmall)
+                    Icon(Icons.Default.CalendarMonth, null, tint = Mint, modifier = Modifier.size(19.dp))
+                    Spacer(Modifier.width(8.dp)); Text(tr("month", english), color = Color.White.copy(alpha = .85f), style = MaterialTheme.typography.titleSmall)
                 }
-                Surface(color = Color.White.copy(alpha = .12f), shape = RoundedCornerShape(50)) {
-                    Text(monthName, Modifier.padding(horizontal = 12.dp, vertical = 7.dp), color = Color.White, style = MaterialTheme.typography.labelMedium)
-                }
+                Surface(color = Color.White.copy(alpha = .12f), shape = CircleShape) { Text(month, Modifier.padding(horizontal = 11.dp, vertical = 6.dp), color = Color.White, style = MaterialTheme.typography.labelSmall) }
             }
             Spacer(Modifier.height(20.dp))
             Row(verticalAlignment = Alignment.Bottom) {
-                Text(formattedTotal, color = Color.White, fontSize = 35.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Spacer(Modifier.width(8.dp))
-                Text(text("currency", english), color = Mint, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 5.dp))
+                Text(number.format(total), color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Spacer(Modifier.width(8.dp)); Text(tr("currency", english), color = Mint, modifier = Modifier.padding(bottom = 5.dp))
             }
-            Spacer(Modifier.height(18.dp))
-            Divider(color = Color.White.copy(alpha = .16f))
-            Spacer(Modifier.height(14.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Surface(shape = CircleShape, color = Color.White.copy(alpha = .13f), modifier = Modifier.size(30.dp)) {
-                    Box(contentAlignment = Alignment.Center) { Icon(Icons.Default.ArrowOutward, contentDescription = null, tint = Mint, modifier = Modifier.size(16.dp)) }
+            Spacer(Modifier.height(8.dp))
+            Text("${tr("today", english)}: ${number.format(0)} ${tr("currency", english)}", color = Color.White.copy(alpha = .7f), style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+@Composable
+private fun BudgetCard(budget: Double, spent: Double, number: NumberFormat, english: Boolean, onClick: () -> Unit) {
+    val remaining = budget - spent
+    val ratio = if (budget > 0) (spent / budget).toFloat().coerceIn(0f, 1f) else 0f
+    Card(Modifier.fillMaxWidth().clickable(onClick = onClick), shape = RoundedCornerShape(22.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+        Column(Modifier.padding(17.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Wallet, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(8.dp)); Text(tr("budget", english), color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
                 }
-                Spacer(Modifier.width(9.dp))
-                Text(text("monthly_total", english), color = Color.White.copy(alpha = .78f), style = MaterialTheme.typography.bodySmall)
+                Text(if (budget > 0) tr("set_budget", english) else "+ ${tr("set_budget", english)}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium)
+            }
+            Spacer(Modifier.height(12.dp))
+            if (budget <= 0) {
+                Text(tr("budget_hint", english), color = Muted, style = MaterialTheme.typography.bodySmall)
+            } else {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("${tr("spent", english)}: ${number.format(spent)} ${tr("currency", english)}", color = Muted, style = MaterialTheme.typography.bodySmall)
+                    Text("${tr(if (remaining >= 0) "remaining" else "over_budget", english)}: ${number.format(kotlin.math.abs(remaining))} ${tr("currency", english)}", color = if (remaining >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
+                }
+                Spacer(Modifier.height(9.dp))
+                LinearProgressIndicator(progress = { ratio }, modifier = Modifier.fillMaxWidth().height(8.dp).clip(CircleShape), color = if (spent > budget) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary, trackColor = MaterialTheme.colorScheme.surfaceVariant)
+                Spacer(Modifier.height(6.dp))
+                Text("${tr("budget", english)}: ${number.format(budget)} ${tr("currency", english)}", color = Muted, style = MaterialTheme.typography.labelSmall)
             }
         }
     }
 }
 
 @Composable
-private fun WeeklySpending(expenses: List<Expense>, formatter: NumberFormat, english: Boolean, locale: Locale) {
+private fun WeekCard(expenses: List<Expense>, number: NumberFormat, english: Boolean, locale: Locale) {
     val today = LocalDate.now()
-    val totals = (6 downTo 0).map { offset ->
-        val day = today.minusDays(offset.toLong())
-        day to expenses.filter { it.date == day.toString() }.sumOf { it.amount }
-    }
-    val maxAmount = totals.maxOfOrNull { it.second }?.coerceAtLeast(1.0) ?: 1.0
-    Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(1.dp)) {
-        Column(Modifier.padding(18.dp)) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Column {
-                    Text(text("quick_view", english), color = Forest, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.height(3.dp))
-                    Text(text("last_7_days", english), color = Muted, style = MaterialTheme.typography.bodySmall)
-                }
-                Surface(shape = RoundedCornerShape(12.dp), color = SoftGreen) {
-                    Icon(Icons.Default.ReceiptLong, contentDescription = null, tint = Forest, modifier = Modifier.padding(10.dp).size(18.dp))
-                }
-            }
-            Spacer(Modifier.height(18.dp))
-            Row(Modifier.fillMaxWidth().height(112.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Bottom) {
-                totals.forEach { (day, amount) ->
-                    val isToday = day == today
+    val days = (6 downTo 0).map { today.minusDays(it.toLong()) }
+    val values = days.map { day -> expenses.filter { it.date == day.toString() }.sumOf { it.amount } }
+    val max = (values.maxOrNull() ?: 0.0).coerceAtLeast(1.0)
+    Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(22.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+        Column(Modifier.padding(17.dp)) {
+            Text(tr("quick", english), color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(16.dp))
+            Row(Modifier.fillMaxWidth().height(105.dp), horizontalArrangement = Arrangement.spacedBy(9.dp), verticalAlignment = Alignment.Bottom) {
+                days.forEachIndexed { index, day ->
                     Column(Modifier.weight(1f).fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Bottom) {
-                        if (amount > 0) {
-                            Text(formatter.format(amount), color = Muted, fontSize = 9.sp, maxLines = 1)
-                            Spacer(Modifier.height(4.dp))
-                        } else Spacer(Modifier.height(14.dp))
-                        Box(Modifier.fillMaxWidth(.58f).height((15 + (75 * (amount / maxAmount)).toInt()).dp).clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)).background(if (isToday) Forest else Mint))
-                        Spacer(Modifier.height(7.dp))
-                        Text(day.format(DateTimeFormatter.ofPattern("E", locale)), color = if (isToday) Forest else Muted, fontSize = 10.sp, fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal)
+                        val amount = values[index]
+                        Box(Modifier.fillMaxWidth(.56f).height((12 + 65 * (amount / max).toInt().coerceAtLeast(if (amount > 0) 1 else 0)).dp).clip(RoundedCornerShape(topStart = 7.dp, topEnd = 7.dp)).background(if (day == today) MaterialTheme.colorScheme.primary else Mint))
+                        Spacer(Modifier.height(6.dp))
+                        Text(day.format(DateTimeFormatter.ofPattern("E", locale)), color = Muted, fontSize = 9.sp, maxLines = 1)
                     }
                 }
             }
@@ -266,37 +274,24 @@ private fun WeeklySpending(expenses: List<Expense>, formatter: NumberFormat, eng
 }
 
 @Composable
-private fun CategoriesSection(totals: Map<String, Double>, formatter: NumberFormat, english: Boolean) {
-    val colors = listOf(Color(0xFF497A63), Color(0xFFE6A15A), Color(0xFF7793B2), Color(0xFFB18AAB), Color(0xFF8A9B70))
-    val entries = totals.entries.sortedByDescending { it.value }.take(4)
-    val max = entries.maxOfOrNull { it.value }?.coerceAtLeast(1.0) ?: 1.0
+private fun CategoryCard(totals: Map<String, Double>, number: NumberFormat, english: Boolean) {
+    val entries = totals.entries.sortedByDescending { it.value }.take(5)
+    val max = (entries.maxOfOrNull { it.value } ?: 0.0).coerceAtLeast(1.0)
     Column {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(text("by_category", english), color = Forest, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            Text(text("this_month", english), color = Muted, style = MaterialTheme.typography.bodySmall)
-        }
-        Spacer(Modifier.height(12.dp))
-        if (entries.isEmpty()) {
-            Card(shape = RoundedCornerShape(18.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
-                Text(text("first_category", english), Modifier.padding(16.dp), color = Muted, style = MaterialTheme.typography.bodyMedium)
-            }
-        } else {
-            Card(shape = RoundedCornerShape(22.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(15.dp)) {
-                    entries.forEachIndexed { index, entry ->
-                        Column {
+        Text(tr("categories", english), color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(10.dp))
+        Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(22.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+            if (entries.isEmpty()) Text(tr("empty_hint", english), Modifier.padding(16.dp), color = Muted)
+            else Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                entries.forEach { entry ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Box(Modifier.size(9.dp).clip(CircleShape).background(colors[index % colors.size]))
-                                    Spacer(Modifier.width(8.dp))
-                                    Text(categoryLabel(entry.key, english), color = Forest, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
-                                }
-                                Text("${formatter.format(entry.value)} ${text("currency", english)}", color = Forest, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
+                                Text(categoryName(entry.key, english), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyMedium)
+                                Text("${number.format(entry.value)} ${tr("currency", english)}", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodySmall)
                             }
-                            Spacer(Modifier.height(8.dp))
-                            Box(Modifier.fillMaxWidth().height(6.dp).clip(CircleShape).background(Canvas)) {
-                                Box(Modifier.fillMaxWidth((entry.value / max).toFloat().coerceIn(.04f, 1f)).height(6.dp).clip(CircleShape).background(colors[index % colors.size]))
-                            }
+                            Spacer(Modifier.height(7.dp))
+                            LinearProgressIndicator(progress = { (entry.value / max).toFloat().coerceIn(.03f, 1f) }, modifier = Modifier.fillMaxWidth().height(6.dp).clip(CircleShape), color = MaterialTheme.colorScheme.secondary, trackColor = MaterialTheme.colorScheme.surfaceVariant)
                         }
                     }
                 }
@@ -306,31 +301,22 @@ private fun CategoriesSection(totals: Map<String, Double>, formatter: NumberForm
 }
 
 @Composable
-private fun RecentExpenses(expenses: List<Expense>, formatter: NumberFormat, english: Boolean, onDelete: (Long) -> Unit) {
+private fun RecentCard(expenses: List<Expense>, number: NumberFormat, english: Boolean, onDelete: (Long) -> Unit, onEdit: (Expense) -> Unit) {
     Column {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(text("recent", english), color = Forest, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            Surface(color = SoftGreen, shape = RoundedCornerShape(50)) {
-                Text("${expenses.size} ${text("transactions", english)}", color = Forest, style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 11.dp, vertical = 6.dp))
-            }
+            Text(tr("recent", english), color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text("${expenses.size} ${tr("count", english)}", color = Muted, style = MaterialTheme.typography.labelSmall)
         }
-        Spacer(Modifier.height(10.dp))
-        if (expenses.isEmpty()) {
-            Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
-                Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Default.Wallet, contentDescription = null, tint = Mint, modifier = Modifier.size(34.dp))
-                    Spacer(Modifier.height(8.dp))
-                    Text(text("empty_title", english), color = Forest, fontWeight = FontWeight.SemiBold)
-                    Text(text("empty_hint", english), color = Muted, style = MaterialTheme.typography.bodySmall)
-                }
-            }
-        } else {
-            Card(shape = RoundedCornerShape(22.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
-                Column {
-                    expenses.take(8).forEachIndexed { index, expense ->
-                        ExpenseRow(expense, formatter, english) { onDelete(expense.id) }
-                        if (index < minOf(expenses.size, 8) - 1) Divider(Modifier.padding(start = 68.dp, end = 16.dp), color = Canvas)
-                    }
+        Spacer(Modifier.height(9.dp))
+        Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(22.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+            if (expenses.isEmpty()) Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(Icons.Default.ReceiptLong, null, tint = Mint, modifier = Modifier.size(32.dp))
+                Spacer(Modifier.height(8.dp)); Text(tr("empty", english), color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
+                Text(tr("empty_hint", english), color = Muted, style = MaterialTheme.typography.bodySmall)
+            } else Column {
+                expenses.take(30).forEachIndexed { index, expense ->
+                    ExpenseRow(expense, number, english, onEdit = { onEdit(expense) }, onDelete = { onDelete(expense.id) })
+                    if (index < minOf(expenses.size, 30) - 1) Divider(Modifier.padding(start = 60.dp, end = 14.dp), color = MaterialTheme.colorScheme.surfaceVariant)
                 }
             }
         }
@@ -338,83 +324,76 @@ private fun RecentExpenses(expenses: List<Expense>, formatter: NumberFormat, eng
 }
 
 @Composable
-private fun ExpenseRow(expense: Expense, formatter: NumberFormat, english: Boolean, onDelete: () -> Unit) {
-    val categoryColor = when (expense.category) {
-        "طعام" -> Color(0xFFE8A15B)
-        "نقل" -> Color(0xFF6D8EAA)
-        "تسوق" -> Color(0xFFB18AAB)
-        "فواتير" -> Color(0xFF7F9C76)
-        else -> Forest
-    }
-    val categoryIcon = when (expense.category) {
-        "طعام" -> Icons.Default.Restaurant
-        "نقل" -> Icons.Default.DirectionsCar
-        "تسوق" -> Icons.Default.ShoppingBag
-        else -> Icons.Default.MoreHoriz
-    }
-    Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 13.dp), verticalAlignment = Alignment.CenterVertically) {
-        Surface(shape = RoundedCornerShape(14.dp), color = categoryColor.copy(alpha = .13f), modifier = Modifier.size(42.dp)) {
-            Box(contentAlignment = Alignment.Center) { Icon(categoryIcon, contentDescription = null, tint = categoryColor, modifier = Modifier.size(20.dp)) }
+private fun ExpenseRow(expense: Expense, number: NumberFormat, english: Boolean, onEdit: () -> Unit, onDelete: () -> Unit) {
+    val iconTint = when (expense.category) { "طعام" -> Color(0xFFE6A15A); "نقل" -> Color(0xFF7793B2); "تسوق" -> Color(0xFFB18AAB); else -> MaterialTheme.colorScheme.secondary }
+    Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 11.dp), verticalAlignment = Alignment.CenterVertically) {
+        Surface(shape = RoundedCornerShape(13.dp), color = iconTint.copy(alpha = .16f), modifier = Modifier.size(40.dp)) {
+            Box(contentAlignment = Alignment.Center) { Icon(when (expense.category) { "طعام" -> Icons.Default.Restaurant; "نقل" -> Icons.Default.DirectionsCar; "تسوق" -> Icons.Default.ShoppingBag; else -> Icons.Default.MoreHoriz }, null, tint = iconTint, modifier = Modifier.size(19.dp)) }
         }
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(10.dp))
         Column(Modifier.weight(1f)) {
-            Text(expense.title, color = Forest, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Spacer(Modifier.height(3.dp))
-            Text("${categoryLabel(expense.category, english)} • ${expense.date}", color = Muted, style = MaterialTheme.typography.labelSmall, maxLines = 1)
+            Text(expense.title, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text("${categoryName(expense.category, english)} • ${expense.date}", color = Muted, style = MaterialTheme.typography.labelSmall, maxLines = 1)
         }
         Column(horizontalAlignment = Alignment.End) {
-            Text("-${formatter.format(expense.amount)}", color = Forest, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-            Text(text("currency", english), color = Muted, style = MaterialTheme.typography.labelSmall)
+            Text(number.format(expense.amount), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+            Text(tr("currency", english), color = Muted, style = MaterialTheme.typography.labelSmall)
         }
-        IconButton(onClick = onDelete, modifier = Modifier.size(34.dp)) {
-            Icon(Icons.Default.DeleteOutline, contentDescription = text("delete", english), tint = Muted, modifier = Modifier.size(18.dp))
-        }
+        IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) { Icon(Icons.Default.Edit, contentDescription = tr("edit", english), tint = Muted, modifier = Modifier.size(17.dp)) }
+        IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) { Icon(Icons.Default.DeleteOutline, contentDescription = tr("delete", english), tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(17.dp)) }
     }
 }
 
 @Composable
-private fun AddExpenseDialog(english: Boolean, onDismiss: () -> Unit, onSubmit: (String, String, String, String, String) -> Unit) {
-    val categories = listOf("طعام", "نقل", "فواتير", "تسوق", "تعليم", "أخرى")
-    var title by remember { mutableStateOf("") }
-    var amount by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf(categories.first()) }
-    var date by remember { mutableStateOf(LocalDate.now().toString()) }
-    var note by remember { mutableStateOf("") }
-    var expanded by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf("") }
+private fun AmountDialog(title: String, hint: String, initialValue: String, errorText: String, english: Boolean, onDismiss: () -> Unit, onSave: (String) -> Unit) {
+    var value by remember { mutableStateOf(initialValue) }
+    var error by remember { mutableStateOf(false) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text("new_expense", english), color = Forest, fontWeight = FontWeight.Bold) },
-        text = {
-            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(title, { title = it }, label = { Text(text("expense_name", english)) }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-                OutlinedTextField(amount, { amount = it }, label = { Text(text("amount", english)) }, modifier = Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
-                Box {
-                    OutlinedTextField(categoryLabel(category, english), {}, label = { Text(text("category", english)) }, modifier = Modifier.fillMaxWidth().clickable { expanded = true }, readOnly = true, trailingIcon = { Icon(Icons.Default.MoreHoriz, contentDescription = null) })
-                    Box(Modifier.matchParentSize().clickable { expanded = true })
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                        categories.forEach { item -> DropdownMenuItem(text = { Text(categoryLabel(item, english)) }, onClick = { category = item; expanded = false }) }
-                    }
-                }
-                OutlinedTextField(date, { date = it }, label = { Text(text("date", english)) }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-                OutlinedTextField(note, { note = it }, label = { Text(text("optional_note", english)) }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-                if (error.isNotBlank()) Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        title = { Text(title, fontWeight = FontWeight.Bold) },
+        text = { Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(hint, color = Muted)
+            OutlinedTextField(value, { value = it }, label = { Text(tr("amount", english)) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
+            if (error) Text(errorText, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        } },
+        confirmButton = { TextButton(onClick = { val amount = value.toDoubleOrNull(); if (amount == null || amount <= 0) error = true else onSave(value) }) { Text(tr("save", english)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(tr("cancel", english)) } },
+        containerColor = MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(24.dp)
+    )
+}
+
+@Composable
+private fun ExpenseDialog(english: Boolean, expense: Expense?, onDismiss: () -> Unit, onSave: (String, String, String, String, String, Long?) -> Unit) {
+    val categories = listOf("طعام", "نقل", "فواتير", "تسوق", "تعليم", "أخرى")
+    var title by remember(expense?.id) { mutableStateOf(expense?.title ?: "") }
+    var amount by remember(expense?.id) { mutableStateOf(expense?.amount?.toString() ?: "") }
+    var category by remember(expense?.id) { mutableStateOf(expense?.category ?: categories.first()) }
+    var date by remember(expense?.id) { mutableStateOf(expense?.date ?: LocalDate.now().toString()) }
+    var note by remember(expense?.id) { mutableStateOf(expense?.note ?: "") }
+    var expanded by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf(false) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(tr(if (expense == null) "new" else "edit", english), fontWeight = FontWeight.Bold) },
+        text = { Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(title, { title = it }, label = { Text(tr("name", english)) }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+            OutlinedTextField(amount, { amount = it }, label = { Text(tr("amount", english)) }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
+            Box {
+                OutlinedTextField(categoryName(category, english), {}, label = { Text(tr("category", english)) }, modifier = Modifier.fillMaxWidth().clickable { expanded = true }, readOnly = true, trailingIcon = { Icon(Icons.Default.MoreHoriz, null) })
+                Box(Modifier.matchParentSize().clickable { expanded = true })
+                DropdownMenu(expanded, { expanded = false }) { categories.forEach { item -> DropdownMenuItem(text = { Text(categoryName(item, english)) }, onClick = { category = item; expanded = false }) } }
             }
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                val validDate = runCatching { LocalDate.parse(date); true }.getOrDefault(false)
-                error = when {
-                    title.isBlank() -> text("name_error", english)
-                    (amount.toDoubleOrNull() ?: 0.0) <= 0.0 -> text("amount_error", english)
-                    !validDate -> text("date_error", english)
-                    else -> ""
-                }
-                if (error.isBlank()) onSubmit(title, amount, category, date, note)
-            }) { Text(text("save", english), color = Forest, fontWeight = FontWeight.Bold) }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(text("cancel", english), color = Muted) } },
-        containerColor = Color.White,
-        shape = RoundedCornerShape(26.dp)
+            OutlinedTextField(date, { date = it }, label = { Text(tr("date", english)) }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+            OutlinedTextField(note, { note = it }, label = { Text(tr("note", english)) }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+            if (error) Text(tr("expense_invalid", english), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        } },
+        confirmButton = { TextButton(onClick = {
+            val validDate = runCatching { LocalDate.parse(date); true }.getOrDefault(false)
+            val valid = title.isNotBlank() && (amount.toDoubleOrNull() ?: 0.0) > 0 && validDate
+            error = !valid
+            if (valid) onSave(title, amount, category, date, note, expense?.id)
+        }) { Text(tr("save", english)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(tr("cancel", english)) } },
+        containerColor = MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(24.dp)
     )
 }

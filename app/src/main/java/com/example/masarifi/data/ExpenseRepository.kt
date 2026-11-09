@@ -3,7 +3,6 @@ package com.example.masarifi.data
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-/** Domain model used by the UI. */
 data class Expense(
     val id: Long,
     val title: String,
@@ -20,7 +19,7 @@ data class Expense(
 class ExpenseRepository(private val dao: ExpenseDao) {
     suspend fun getAll(): List<Expense> = dao.getAll().map { it.toDomain() }
 
-    suspend fun addExpense(expense: Expense) {
+    suspend fun saveExpense(expense: Expense) {
         dao.insert(expense.toEntity())
     }
 
@@ -28,21 +27,13 @@ class ExpenseRepository(private val dao: ExpenseDao) {
         dao.deleteById(id)
     }
 
-    private fun ExpenseEntity.toDomain() = Expense(
-        id = id,
-        title = title,
-        amount = amount,
-        category = category,
-        date = date,
-        note = note
-    )
+    suspend fun getBudget(month: String): Double = dao.getBudget(month)?.amount ?: 0.0
 
-    private fun Expense.toEntity() = ExpenseEntity(
-        id = id,
-        title = title,
-        amount = amount,
-        category = category,
-        date = date,
-        note = note
-    )
+    suspend fun saveBudget(month: String, amount: Double) {
+        dao.saveBudget(MonthlyBudgetEntity(month, amount))
+    }
+
+    private fun ExpenseEntity.toDomain() = Expense(id, title, amount, category, date, note)
+
+    private fun Expense.toEntity() = ExpenseEntity(id, title, amount, category, date, note)
 }
