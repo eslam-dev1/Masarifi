@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Wallet body -->
+    <path android:fillColor="#0D263B" android:pathData="M25,45 L65,36 Q70,35 74,39 L82,48 L80,78 Q79,83 73,84 L31,82 Q25,81 25,75 Z" />
+    <path android:fillColor="#0D263B" android:strokeColor="#D8AE55" android:strokeWidth="2" android:pathData="M25,48 Q25,43 31,42 L68,38 Q73,38 76,43 L82,51 L32,58 Q26,58 25,53 Z" />
+    <path android:fillColor="#173B54" android:pathData="M29,57 L81,51 L79,77 Q79,81 74,82 L33,80 Q29,80 29,75 Z" />
+    <path android:fillColor="#D8AE55" android:pathData="M30,55 L81,49 L82,52 L30,59 Z" />
+    <path android:fillColor="#E4BD68" android:pathData="M61,77a4,4 0,1 0,8 0a4,4 0,1 0,-8 0" />
+    <!-- Rising chart arrow -->
+    <path android:fillColor="#35D89B" android:pathData="M35,55 L47,43 L54,49 L68,32 L64,29 L79,25 L77,41 L73,37 L55,58 L48,52 L38,62 Z" />
+    <path android:fillColor="#8DF2B2" android:pathData="M68,32 L79,25 L77,41 L74,37 L66,46 L62,42 Z" />
+    <!-- Verified badge -->
+    <path android:fillColor="#26CE91" android:pathData="M80,55 L84,57 L88,56 L91,59 L95,61 L95,65 L97,69 L95,73 L95,77 L91,79 L88,83 L84,82 L80,84 L76,82 L72,83 L69,79 L65,77 L66,73 L64,69 L66,65 L66,61 L70,59 L73,56 L77,57 Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M73,69 L76,66 L80,70 L87,62 L90,65 L80,76 Z" />
+</vector>
